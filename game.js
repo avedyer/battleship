@@ -1,33 +1,24 @@
-const Ship = (length) => {
+let Ship = (length) => {
 
-    let hits = [];
+    let hits = 0;
     let vertical = true;
     let coords = []
 
-    function hit(position) {
-        if (position > length || position < 1 || hits.includes(position)) {
-            return false
+    function hit() {
+        if (hits < length) {
+            ++hits;
         }
-        hits.push(position);
-        hits.sort((a, b) => a - b);
-
-        return true
     }
 
     function isSunk() {
-        for (let i=1; i<=length; ++i) {
-            if (!hits.includes(i)) {
-                return false
-            }
-            return true
-        }
+        return hits === length ? true : false
     }
 
     return {
         length,
-        hits,
         coords,
         vertical,
+        hits,
         hit,
         isSunk
     }
@@ -38,8 +29,8 @@ const Board = () => {
 
     let attacks = [];
     let hits = [];
+    let misses = [];
     let ships = [];
-    let shipCoords = [];
 
     function placeShip(ship, coord) {
         ships.push(ship);
@@ -52,7 +43,9 @@ const Board = () => {
     }
 
     function receiveAttack(attack) {
-        if (attacks.includes(attack)) {
+        if (attacks.includes(attack) 
+        || attack[0] < 0  || attack[1] < 0
+        || attack[1] > 9 || attack[1] > 9) {
             return false
         }
 
@@ -62,21 +55,59 @@ const Board = () => {
             for (let coord of ship.coords) {
                 if (attack[0] === coord[0] && attack[1] === coord[1]) {
                     hits.push(attack);
-                    ship.hit
+                    ship.hit()
+
+                    return true
                 }
             }
         }
+        
+        misses.push(attack)
 
         return true
 
     }
+
+    const checkWin = () => {
+        for (const ship of ships) {
+            if(!ship.isSunk()) {
+
+                return false
+            }
+        }
+        return true
+    }
+
     return {
         ships,
         attacks,
         hits,
+        misses,
         placeShip,
-        receiveAttack
+        receiveAttack,
+        checkWin
     }
 }
 
-export {Ship, Board}
+const Player = () => {
+
+    let computer = false
+
+    const computeMove = (gameboard) => {
+        // Random coordinate selector. To be made smart later.
+
+        let attack = [Math.floor(Math.random * 10), Math.floor(Math.random() * 10)]
+
+        while(!gameboard.receiveAttack(attack)) {
+            attack = [Math.floor(Math.random * 10), Math.floor(Math.random() * 10)]
+            gameboard.receiveAttack(attack);
+        }
+    }
+
+    return {
+        computer,
+        computeMove
+    }
+}
+
+export {Ship, Board, Player}
