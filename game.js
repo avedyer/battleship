@@ -155,22 +155,30 @@ const Game = () => {
         board.randomizeShips(newShips());
     }
 
-    let liveBoard = 1
+    let liveIndex = 1
+    let liveBoard = () => boards[liveIndex];
 
     function takeTurn(coord) {
-        if(boards[liveBoard].receiveAttack(coord)){
-            console.log(boards[liveBoard].ships);
-            liveBoard === 1 ? liveBoard  = 0 : liveBoard = 1
+        if(liveBoard().receiveAttack(coord)){
             return true
         }
         return false
+    }
+
+    const checkWin = () => liveBoard().checkWin()
+
+    function toggleTurn() {
+        liveIndex === 1 ? liveIndex  = 0 : liveIndex = 1
     }
 
 
     return {
         players,
         boards,
-        takeTurn
+        liveBoard,
+        takeTurn,
+        checkWin,
+        toggleTurn
     }
 }
 

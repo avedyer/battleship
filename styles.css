@@ -29,7 +29,7 @@ body {
     height: 60px;
     box-sizing: border-box;
     border: 1px solid black;
-    background-color: blue;
+    background-color: lightgray;
 }
 
 .board.active .tile:hover {
@@ -38,4 +38,12 @@ body {
 
 .ship {
     background-color: grey;
+}
+
+.hit {
+    background-color: red;
+}
+
+.miss {
+    background-color: blue;
 }

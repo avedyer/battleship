@@ -22,12 +22,31 @@ function loadUI() {
 
                 tileEl.onclick = () => {
                     const coord = [Math.floor(i/10), i%10];
-                    console.log(coord)
                     if (!tileEl.parentElement.classList.contains('active')) {
                         return false
                     }
 
                     if(game.takeTurn(coord)); {
+                        for (const hit of game.liveBoard().hits) {
+                            console.log('hit: ' + hit);
+                            if (hit[0] === coord[0] && hit[1] === coord[1]) {
+                                
+                                tileEl.classList.add('hit')
+                            }
+                        }
+                        for (const miss of game.liveBoard().misses) {
+                            console.log('miss: ' + miss)
+                            if (miss[0] === coord[0] && miss[1] === coord[1]) {
+                                tileEl.classList.add('miss')
+                            }
+                        }
+                        
+                        if (game.checkWin()) {
+                            alert('Win Detected');
+                            return
+                        }
+
+                        game.toggleTurn();
                         toggleBoards();
                     }
                 }
