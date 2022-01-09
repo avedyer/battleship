@@ -33,13 +33,40 @@ const Board = () => {
     let ships = [];
 
     function placeShip(ship, coord) {
-        ships.push(ship);
+
+        let coords = []
+
         for (let i=0; i<ship.length; ++i) {
-            ship.coords.push(
+            coords.push (
                 ship.vertical ? [coord[0], coord[1] + i] : [coord[0] + i, coord[1]]
-            );
+            )
         }
 
+        for (const oldShip of ships) {
+            for (const newCoord of coords) {
+                if (oldShip.coords.includes(newCoord)) {
+                    return false
+                }
+            }
+        }
+
+        ship.coords = coords.slice(0);
+        ships.push(ship);
+
+        return true
+    }
+
+    function randomizeShips(ships) {
+
+        let coords 
+
+        for (let ship of ships) {            
+            do {
+                ship.vertical = Math.random < 0.5;
+                coords = [Math.floor(Math.random() * 10), Math.floor(Math.random() * 10)]
+            }
+            while(!placeShip(ship, coords));
+        }
     }
 
     function receiveAttack(attack) {
@@ -57,6 +84,7 @@ const Board = () => {
                     hits.push(attack);
                     ship.hit()
 
+                    console.log('Hit!');
                     return true
                 }
             }
@@ -64,6 +92,7 @@ const Board = () => {
         
         misses.push(attack)
 
+        console.log('Miss!');
         return true
 
     }
@@ -71,7 +100,6 @@ const Board = () => {
     const checkWin = () => {
         for (const ship of ships) {
             if(!ship.isSunk()) {
-
                 return false
             }
         }
@@ -85,11 +113,12 @@ const Board = () => {
         misses,
         placeShip,
         receiveAttack,
-        checkWin
+        checkWin,
+        randomizeShips
     }
 }
 
-const Player = () => {
+const Player = (name) => {
 
     let computer = false
 
@@ -105,9 +134,43 @@ const Player = () => {
     }
 
     return {
+        name,
         computer,
         computeMove
     }
 }
 
-export {Ship, Board, Player}
+const Game = () => {
+
+    let players = [Player(), Player()];
+        players[1].computer = true;
+    let boards = [Board(), Board()];
+
+    let shipSet = [Ship(2), Ship(3), Ship(3), Ship(4), Ship(5)]
+
+    let liveBoard = boards[1]
+    let livePlayer = players[0]
+
+    const togglePlayer = () => {
+        liveBoard = liveBoard === boards[1] ? boards[0] : boards[1];
+        livePlayer = livePlayer === players[1] ? players[0] : players[1]
+    }
+
+    function takeTurn(coord) {
+        if(liveBoard.receiveAttack(coord)){
+            togglePlayer();
+            return true
+        }
+        return false
+    }
+
+
+    return {
+        players,
+        boards,
+        shipSet,
+        takeTurn
+    }
+}
+
+export {Ship, Board, Player, Game}

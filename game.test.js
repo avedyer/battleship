@@ -1,4 +1,4 @@
-import {Ship, Board, Player} from './game.js'
+import {Ship, Board, Player, Game} from './game.js'
 
 /*
 it('Registers Hit', () => {
@@ -130,4 +130,14 @@ it('Registers Non-Winstate', () => {
 
     expect(testBoard.checkWin())
     .toBe(false);
+})
+
+it('Randomizes Ships', () => {
+
+    let testGame = Game();
+
+    testGame.boards[0].randomizeShips(testGame.shipSet)
+
+    expect(testGame.boards[0].ships.length)
+    .toBe(5)
 })
