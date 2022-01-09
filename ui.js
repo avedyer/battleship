@@ -14,17 +14,39 @@ function loadUI() {
         const boardEl = document.createElement('div');
             boardEl.classList.add('board');
 
+        let tiles = []
+
         for (let i=0; i<100; ++i) {
             const tileEl = document.createElement('div');
                 tileEl.classList.add('tile');
-                boardEl.append(tileEl);
 
                 tileEl.onclick = () => {
-                    const coord = [i%10, Math.floor(i/10)];
+                    const coord = [Math.floor(i/10), i%10];
+                    console.log(coord)
+                    if (!tileEl.parentElement.classList.contains('active')) {
+                        return false
+                    }
+
                     if(game.takeTurn(coord)); {
                         toggleBoards();
                     }
                 }
+
+                tiles.push(tileEl)
+                boardEl.append(tileEl);
+        }
+
+        let shipIndexes = []
+
+        for (const ship of board.ships) {  
+            for (const coord of ship.coords) {
+                let index = (parseInt(coord[0]) * 10) + parseInt(coord[1]);
+                shipIndexes.push(index);
+            }
+        }
+
+        for (const index of shipIndexes) {
+            tiles[index].classList.add('ship');
         }
 
         gameContainer.append(boardEl);

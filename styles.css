@@ -32,6 +32,10 @@ body {
     background-color: blue;
 }
 
-.tile:hover {
+.board.active .tile:hover {
     opacity: 0.7;
+}
+
+.ship {
+    background-color: grey;
 }

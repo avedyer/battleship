@@ -40,12 +40,14 @@ const Board = () => {
             coords.push (
                 ship.vertical ? [coord[0], coord[1] + i] : [coord[0] + i, coord[1]]
             )
-        }
-
-        for (const oldShip of ships) {
-            for (const newCoord of coords) {
-                if (oldShip.coords.includes(newCoord)) {
-                    return false
+            if (coords[i][0] > 9 || coords[i][1] > 9) {
+                return false
+            }
+            for (const oldShip of ships) {
+                for (const oldCoord of oldShip.coords) {
+                    if (coords[i][0] === oldCoord[0] && coords[i][1] === oldCoord[1]) {
+                        return false
+                    }
                 }
             }
         }
@@ -72,7 +74,7 @@ const Board = () => {
     function receiveAttack(attack) {
         if (attacks.includes(attack) 
         || attack[0] < 0  || attack[1] < 0
-        || attack[1] > 9 || attack[1] > 9) {
+        || attack[0] > 9 || attack[1] > 9) {
             return false
         }
 
@@ -142,23 +144,23 @@ const Player = (name) => {
 
 const Game = () => {
 
-    let players = [Player(), Player()];
-        players[1].computer = true;
-    let boards = [Board(), Board()];
+    const newShips = () => [Ship(2), Ship(3), Ship(3), Ship(4), Ship(5)]
+    const newPlayers = () => [Player(), Player()];
+    const newBoards = () => [Board(), Board()];
 
-    let shipSet = [Ship(2), Ship(3), Ship(3), Ship(4), Ship(5)]
+    let players = newPlayers()
+    let boards = newBoards()
 
-    let liveBoard = boards[1]
-    let livePlayer = players[0]
-
-    const togglePlayer = () => {
-        liveBoard = liveBoard === boards[1] ? boards[0] : boards[1];
-        livePlayer = livePlayer === players[1] ? players[0] : players[1]
+    for (const board of boards) {
+        board.randomizeShips(newShips());
     }
 
+    let liveBoard = 1
+
     function takeTurn(coord) {
-        if(liveBoard.receiveAttack(coord)){
-            togglePlayer();
+        if(boards[liveBoard].receiveAttack(coord)){
+            console.log(boards[liveBoard].ships);
+            liveBoard === 1 ? liveBoard  = 0 : liveBoard = 1
             return true
         }
         return false
@@ -168,7 +170,6 @@ const Game = () => {
     return {
         players,
         boards,
-        shipSet,
         takeTurn
     }
 }
