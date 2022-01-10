@@ -72,8 +72,14 @@ const Board = () => {
     }
 
     function receiveAttack(attack) {
-        if (attacks.includes(attack) 
-        || attack[0] < 0  || attack[1] < 0
+
+        for (const oldAttack of attacks) {
+            if (oldAttack[0] === attack[0] && oldAttack[1] == attack[1]) {
+                return false
+            }
+        }
+
+        if (attack[0] < 0  || attack[1] < 0
         || attack[0] > 9 || attack[1] > 9) {
             return false
         }

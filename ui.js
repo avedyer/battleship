@@ -30,6 +30,22 @@ function loadUI() {
                 const tileEl = document.createElement('div');
                     tileEl.classList.add('tile');
 
+                    tileEl.onclick = () => {
+                        if (!tileEl.parentElement.parentElement.classList.contains('active')){
+                            return false
+                        }
+                        if(board.receiveAttack([i, j])){
+                            renderAttacks(tiles, board);
+                            if (!board.checkWin()) {
+                                togglePlayer();
+                                return true
+                            }
+                            alert('win detected!');
+                            return true
+
+                        }
+                    }
+
                 row.push(tileEl)
                 boardEl.append(tileEl);
             }
@@ -55,9 +71,35 @@ function loadUI() {
         uiBoards.push(tiles);
     }
 
-    console.log(uiBoards);
     body.append(gameContainer);
 
+    renderShips(uiBoards[0], game.boards[0]);
+    renderShips(uiBoards[1], game.boards[1]);
+
+    document.querySelectorAll('.playerSpace')[0].classList.add('active');
+}
+
+function renderShips(tiles, board) {
+    for (const ship of board.ships) {
+        for (const coord of ship.coords) {
+            tiles[coord[0]][coord[1]].classList.add('ship');
+        }
+    }
+}
+
+function renderAttacks(tiles, board) {
+    for (const hit of board.hits) {
+        tiles[hit[0]][hit[1]].classList.add('hit');
+    }
+    for (const miss of board.misses) {
+        tiles[miss[0]][miss[1]].classList.add('miss');
+    }
+}
+
+function togglePlayer() {
+    for( let playerSpace of document.querySelectorAll('.playerSpace')) {
+        playerSpace.classList.toggle('active');
+    }
 }
 
 export {loadUI}
