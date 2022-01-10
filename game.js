@@ -151,8 +151,10 @@ const Game = () => {
     let players = newPlayers()
     let boards = newBoards()
 
-    for (const board of boards) {
-        board.randomizeShips(newShips());
+    function randomize() {
+        for (const board of boards) {
+            board.randomizeShips(newShips());
+        }
     }
 
     let liveIndex = 1
@@ -178,7 +180,9 @@ const Game = () => {
         liveBoard,
         takeTurn,
         checkWin,
-        toggleTurn
+        toggleTurn,
+        newShips,
+        randomize
     }
 }
 
