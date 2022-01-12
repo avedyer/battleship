@@ -3,7 +3,7 @@ import {Ship, Board, Player, Game} from './game.js'
 const body = document.querySelector('body');
 
 function loadUI() {
-    let game = Game()
+    let game = Game();
     game.randomize();
 
     let uiBoards = []
@@ -61,6 +61,8 @@ function loadUI() {
                     shipEl.append(document.createElement('div'));
                 }
 
+                shipEl.onclick = () => placeShip(tiles, ship, board);
+
             dock.append(shipEl);
         }
 
@@ -77,6 +79,18 @@ function loadUI() {
     renderShips(uiBoards[1], game.boards[1]);
 
     document.querySelectorAll('.playerSpace')[0].classList.add('active');
+}
+
+function hoverShip(tiles, ship) {
+    for (const coord of ship.coords) {
+        tiles[coord[0]][coord[1]].classList.add('shadow');
+    }
+}
+
+function stripHoverShip() {
+    for (const tile of document.querySelectorAll('.tile')) {
+        tile.classList.remove('shadow')
+    }
 }
 
 function renderShips(tiles, board) {
@@ -99,6 +113,20 @@ function renderAttacks(tiles, board) {
 function togglePlayer() {
     for( let playerSpace of document.querySelectorAll('.playerSpace')) {
         playerSpace.classList.toggle('active');
+    }
+}
+
+function placeShip(tiles, ship, board) {
+    for (let i=0; i<tiles.length; ++i){
+        for (let j=0; j<tiles[i].length; ++j) {
+            tiles[i][j].addEventListener('mouseover', () => {
+                ship.coords = [i, j];
+                hoverShip(tiles, ship);
+            })
+            tiles[i][j].addEventListener('mouseout', () => {
+                stripHoverShip();
+            })
+        }
     }
 }
 

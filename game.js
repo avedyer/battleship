@@ -14,13 +14,20 @@ let Ship = (length) => {
         return hits === length ? true : false
     }
 
+    function writeCoords(newCoords) {
+        for (let i=0; i<newCoords.length; ++i) {
+            coords[i] = newCoords[i].slice();
+        }
+    }
+
     return {
         length,
         coords,
         vertical,
         hits,
         hit,
-        isSunk
+        isSunk,
+        writeCoords
     }
 }
 
@@ -31,18 +38,20 @@ const Board = () => {
     let hits = [];
     let misses = [];
     let ships = [];
+    let size = 10;
 
-    function placeShip(ship, coord) {
-
-        let coords = []
-
-        for (let i=0; i<ship.length; ++i) {
-            coords.push (
-                ship.vertical ? [coord[0], coord[1] + i] : [coord[0] + i, coord[1]]
-            )
-            if (coords[i][0] > 9 || coords[i][1] > 9) {
+    function validateCoords(anchor, length, vertical) {
+        for (let i=0; i<length; ++i) {
+            let nextCoord = vertical ? anchor[1] + i : anchor[0] + i
+            if (nextCoord >= size) {
                 return false
             }
+        }
+        return true
+    }
+
+    function validatePlacement(coords) {
+        for (let i=0; i<coords.length; ++i) {
             for (const oldShip of ships) {
                 for (const oldCoord of oldShip.coords) {
                     if (coords[i][0] === oldCoord[0] && coords[i][1] === oldCoord[1]) {
@@ -51,24 +60,41 @@ const Board = () => {
                 }
             }
         }
+        return true
+    }
 
-        ship.coords = coords.slice(0);
-        ships.push(ship);
+    function placeShip(newShip) {
+
+        ships.push(newShip);
 
         return true
     }
 
-    function randomizeShips(ships) {
+    function randomizeShips(newShips) {
 
-        let coords 
+        let anchor;
+        let coords = [];
 
-        for (let ship of ships) {            
+        let timeout = 10**8
+
+        for (let ship of newShips) {            
             do {
-                ship.vertical = Math.random < 0.5;
-                coords = [Math.floor(Math.random() * 10), Math.floor(Math.random() * 10)]
+
+                anchor = [Math.floor(Math.random() * size), Math.floor(Math.random() * size)];
+                coords = coords.splice(0, coords.length);
+                ship.vertical = Math.random() < 0.5;
+
+                for (let i=0; i<ship.length; ++i) {
+                    coords[i] = ship.vertical ? [anchor[0], anchor[1] + i] : [anchor[0] + i, anchor[1]];
+                }
+
+                --timeout
             }
-            while(!placeShip(ship, coords));
+            while(!validateCoords(anchor, ship.length, ship.vertical) || !validatePlacement(coords));
+            ship.writeCoords(coords);
+            placeShip(ship);
         }
+        console.log(ships);
     }
 
     function receiveAttack(attack) {
@@ -80,7 +106,7 @@ const Board = () => {
         }
 
         if (attack[0] < 0  || attack[1] < 0
-        || attack[0] > 9 || attack[1] > 9) {
+        || attack[0] >= size || attack[1] >= size) {
             return false
         }
 
@@ -166,13 +192,6 @@ const Game = () => {
     let liveIndex = 1
     let liveBoard = () => boards[liveIndex];
 
-    function takeTurn(coord) {
-        if(liveBoard().receiveAttack(coord)){
-            return true
-        }
-        return false
-    }
-
     const checkWin = () => liveBoard().checkWin()
 
     function toggleTurn() {
@@ -184,7 +203,6 @@ const Game = () => {
         players,
         boards,
         liveBoard,
-        takeTurn,
         checkWin,
         toggleTurn,
         newShips,
