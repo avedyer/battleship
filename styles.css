@@ -57,6 +57,10 @@ body {
     background-color: blue;
 }
 
+.tile.reject {
+    background-color: palevioletred;
+}
+
 .dock {
     display: grid;
     grid-template-rows: repeat(5, 1fr);

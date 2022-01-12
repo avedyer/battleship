@@ -14,6 +14,10 @@ let Ship = (length) => {
         return hits === length ? true : false
     }
 
+    function getCoords(anchor) {
+
+    }
+
     function writeCoords(newCoords) {
         for (let i=0; i<newCoords.length; ++i) {
             coords[i] = newCoords[i].slice();
@@ -40,10 +44,9 @@ const Board = () => {
     let ships = [];
     let size = 10;
 
-    function validateCoords(anchor, length, vertical) {
-        for (let i=0; i<length; ++i) {
-            let nextCoord = vertical ? anchor[1] + i : anchor[0] + i
-            if (nextCoord >= size) {
+    function validateCoords(ship) {
+        for (let i=0; i<ship.length; ++i) {
+            if (ship.coords[i][0] >= size || ship.coords[i][1] >= size) {
                 return false
             }
         }
@@ -63,6 +66,21 @@ const Board = () => {
         return true
     }
 
+    function makeMockShip(anchor, length, vertical) {
+        let mockShip = Ship(length);
+        Ship.vertical = vertical;
+
+        let coords = []
+
+        for (let i=0; i<mockShip.length; ++i) {
+            coords[i] = mockShip.vertical ? [anchor[0], anchor[1] + i] : [anchor[0] + i, anchor[1]];
+        }
+
+        mockShip.writeCoords(coords);
+
+        return mockShip;
+    }
+
     function placeShip(newShip) {
 
         ships.push(newShip);
@@ -74,25 +92,26 @@ const Board = () => {
 
         let anchor;
         let coords = [];
-
         let timeout = 10**8
+        let mockShip
 
         for (let ship of newShips) {            
             do {
 
                 anchor = [Math.floor(Math.random() * size), Math.floor(Math.random() * size)];
                 coords = coords.splice(0, coords.length);
-                ship.vertical = Math.random() < 0.5;
+                let vertical = Math.random() < 0.5;
 
-                for (let i=0; i<ship.length; ++i) {
-                    coords[i] = ship.vertical ? [anchor[0], anchor[1] + i] : [anchor[0] + i, anchor[1]];
-                }
-
+                mockShip = makeMockShip(anchor, ship.length, vertical)
                 --timeout
             }
-            while(!validateCoords(anchor, ship.length, ship.vertical) || !validatePlacement(coords));
-            ship.writeCoords(coords);
+            while(!validateCoords(mockShip) || !validatePlacement(mockShip.coords));
+            ship = mockShip
             placeShip(ship);
+
+            if (timeout<0) {
+                break
+            }
         }
         console.log(ships);
     }
@@ -148,6 +167,9 @@ const Board = () => {
         placeShip,
         receiveAttack,
         checkWin,
+        validateCoords,
+        validatePlacement,
+        makeMockShip,
         randomizeShips
     }
 }

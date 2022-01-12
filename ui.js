@@ -13,6 +13,8 @@ function loadUI() {
 
     for (const board of game.boards) {
 
+        console.log(board);
+
         const playerSpace = document.createElement('div');
             playerSpace.classList.add('playerSpace');
 
@@ -61,7 +63,7 @@ function loadUI() {
                     shipEl.append(document.createElement('div'));
                 }
 
-                shipEl.onclick = () => placeShip(tiles, ship, board);
+                shipEl.onclick = () => selectShip(tiles, ship, board);
 
             dock.append(shipEl);
         }
@@ -82,6 +84,7 @@ function loadUI() {
 }
 
 function hoverShip(tiles, ship) {
+
     for (const coord of ship.coords) {
         tiles[coord[0]][coord[1]].classList.add('shadow');
     }
@@ -89,7 +92,7 @@ function hoverShip(tiles, ship) {
 
 function stripHoverShip() {
     for (const tile of document.querySelectorAll('.tile')) {
-        tile.classList.remove('shadow')
+        tile.classList.remove('shadow', 'reject');
     }
 }
 
@@ -116,12 +119,24 @@ function togglePlayer() {
     }
 }
 
-function placeShip(tiles, ship, board) {
+function selectShip(tiles, ship, board) {
+    console.log(board);
     for (let i=0; i<tiles.length; ++i){
         for (let j=0; j<tiles[i].length; ++j) {
             tiles[i][j].addEventListener('mouseover', () => {
-                ship.coords = [i, j];
-                hoverShip(tiles, ship);
+                let mockShip = board.makeMockShip([i, j], ship.length, ship.vertical);
+                if (board.validateCoords(mockShip) && board.validatePlacement(mockShip.coords)) {
+                    hoverShip(tiles, mockShip);
+                    tiles[i][j].onclick = () => {
+                        console.log(board);
+                        ship = mockShip
+                        board.placeShip(ship);
+                        renderShips(tiles, board);
+                    }
+                }
+                else {
+                    tiles[i][j].classList.add('reject');
+                }
             })
             tiles[i][j].addEventListener('mouseout', () => {
                 stripHoverShip();
