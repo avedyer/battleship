@@ -68,7 +68,7 @@ const Board = () => {
 
     function makeMockShip(anchor, length, vertical) {
         let mockShip = Ship(length);
-        Ship.vertical = vertical;
+        mockShip.vertical = vertical;
 
         let coords = []
 

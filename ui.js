@@ -4,7 +4,7 @@ const body = document.querySelector('body');
 
 function loadUI() {
     let game = Game();
-    game.randomize();
+    //game.randomize();
 
     let uiBoards = []
 
@@ -33,6 +33,7 @@ function loadUI() {
                     tileEl.classList.add('tile');
 
                     tileEl.onclick = () => {
+                        return
                         if (!tileEl.parentElement.parentElement.classList.contains('active')){
                             return false
                         }
@@ -120,24 +121,54 @@ function togglePlayer() {
 }
 
 function selectShip(tiles, ship, board) {
-    console.log(board);
+
+    if (board.ships.length >= 5) {
+        return false
+    }
+
     for (let i=0; i<tiles.length; ++i){
+
         for (let j=0; j<tiles[i].length; ++j) {
+
             tiles[i][j].addEventListener('mouseover', () => {
+
                 let mockShip = board.makeMockShip([i, j], ship.length, ship.vertical);
+
                 if (board.validateCoords(mockShip) && board.validatePlacement(mockShip.coords)) {
+
                     hoverShip(tiles, mockShip);
-                    tiles[i][j].onclick = () => {
-                        console.log(board);
-                        ship = mockShip
-                        board.placeShip(ship);
-                        renderShips(tiles, board);
+
+                    let numClicks = 0;
+                    let singleClickTimer
+                    const handleClick = () => {
+                        ++numClicks;
+                        if (numClicks === 1) {
+                            singleClickTimer = setTimeout(() => {
+                                numClicks = 0;
+                                console.log('single click')
+                                ship = mockShip
+                                board.placeShip(ship);
+                                renderShips(tiles, board);
+                            }, 400);
+                          }
+                        else if (numClicks === 2) {
+                            clearTimeout(singleClickTimer);
+                            numClicks = 0;
+                            console.log('dbl click');
+                            ship.vertical = !ship.vertical;
+                            mockShip = board.makeMockShip([i, j], ship.length, ship.vertical);
+                            console.log(mockShip)
+                        }
                     }
+
+                    tiles[i][j].addEventListener('click', handleClick);
                 }
+
                 else {
                     tiles[i][j].classList.add('reject');
                 }
             })
+
             tiles[i][j].addEventListener('mouseout', () => {
                 stripHoverShip();
             })
