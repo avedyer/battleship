@@ -130,7 +130,7 @@ function selectShip(tiles, ship, board) {
 
         for (let j=0; j<tiles[i].length; ++j) {
 
-            tiles[i][j].addEventListener('mouseover', () => {
+            tiles[i][j].onmouseover = () => {
 
                 let mockShip = board.makeMockShip([i, j], ship.length, ship.vertical);
 
@@ -167,7 +167,7 @@ function selectShip(tiles, ship, board) {
                 else {
                     tiles[i][j].classList.add('reject');
                 }
-            })
+            }
 
             tiles[i][j].addEventListener('mouseout', () => {
                 stripHoverShip();
