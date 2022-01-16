@@ -16,6 +16,9 @@ let Ship = (length) => {
 
     function turn() {
         vertical = !vertical;
+        if (coords.length === 0) {
+            return
+        }
         let newCoords = []
         let anchor = coords[0]
         for (let i=0; i<length; ++i) {

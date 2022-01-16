@@ -141,9 +141,6 @@ function replaceShip(ship, board) {
 
 function selectShip(tiles, ship, board) {
 
-    console.log(ship)
-    let mockShip = Ship();
-
     for (let i=0; i<tiles.length; ++i){
 
         for (let j=0; j<tiles[i].length; ++j) {
@@ -151,8 +148,7 @@ function selectShip(tiles, ship, board) {
             tiles[i][j].onmouseover = () => {
 
                 let anchor = [i, j];
-                console.log(anchor)
-                Object.assign(mockShip, board.makeMockShip(anchor, ship.getLength(), ship.isVertical()))
+                let mockShip =  board.makeMockShip(anchor, ship.getLength(), ship.isVertical());
 
                 if (board.validateCoords(mockShip) && board.validatePlacement(mockShip.getCoords())) {
 
@@ -177,15 +173,12 @@ function selectShip(tiles, ship, board) {
                         else if (numClicks === 2) {
                             clearTimeout(singleClickTimer);
                             numClicks = 0;
-                            ship.writeCoords(mockShip.getCoords());
-                            console.log(ship.getCoords())
                             mockShip.turn();
                             ship.turn();
-                            console.log(mockShip.isVertical(), mockShip.getCoords());
                         }
                     }
 
-                    tiles[i][j].addEventListener('click', handleClick);
+                    tiles[i][j].onclick = handleClick
                 }
 
                 else {
