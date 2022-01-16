@@ -33,6 +33,10 @@ body {
     opacity: 1;
 }
 
+button.confirm {
+    
+}
+
 .tile {
     width: 60px;
     height: 60px;

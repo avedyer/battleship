@@ -199,9 +199,6 @@ const Board = () => {
     }
 
     return {
-        attacks,
-        hits,
-        misses,
         getHits,
         getMisses,
         getShips,
@@ -219,6 +216,10 @@ const Player = (name) => {
 
     let computer = false
 
+    function isComputer() {
+        return computer
+    }
+
     const computeMove = (gameboard) => {
         // Random coordinate selector. To be made smart later.
 
@@ -232,12 +233,14 @@ const Player = (name) => {
 
     return {
         name,
-        computer,
+        isComputer,
         computeMove
     }
 }
 
 const Game = () => {
+
+    let active = false
 
     const newShips = () => [Ship(2), Ship(3), Ship(3), Ship(4), Ship(5)]
     const newPlayers = () => [Player(), Player()];
@@ -252,30 +255,65 @@ const Game = () => {
         }
     }
 
+    function getBoards() {
+        return boards
+    }
+
     function randomize() {
         for (const board of boards) {
             board.randomizeShips(newShips());
         }
     }
 
-    let liveIndex = 1
-    let liveBoard = () => boards[liveIndex];
+    let activeIndex = 0
+    let activeBoard = () => boards[activeIndex];
+    let livePlayer = () => activeIndex === 1 ? players[0] : players[1]
 
-    const checkWin = () => liveBoard().checkWin()
+    const checkWin = () => {
+        if(activeBoard().checkWin()) {
+            active = false
+            return true
+        }
+        toggleTurn();
+        return false
+    }
 
     function toggleTurn() {
-        liveIndex === 1 ? liveIndex  = 0 : liveIndex = 1
+        activeIndex === 1 ? activeIndex  = 0 : activeIndex = 1
     }
 
 
+    function isActive() {
+        return active
+    }
+
+    function start() {
+        active = true
+        activeIndex = 1;
+        takeTurn();
+    }
+
+    function takeTurn(attack) {
+        
+        if(activePlayer().isComputer()) {
+            activePlayer().computeMove();
+        }
+
+        else {
+            activeBoard.receiveAttack(attack);
+        }
+    }
+
     return {
-        players,
-        boards,
-        liveBoard,
+        isActive,
+        start,
+        getBoards,
+        activeBoard,
         checkWin,
         toggleTurn,
         newShips,
-        randomize
+        randomize,
+        isActive
     }
 }
 

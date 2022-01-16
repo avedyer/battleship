@@ -1,9 +1,9 @@
 import {Ship, Board, Player, Game} from './game.js'
 
 const body = document.querySelector('body');
+let game = Game();
 
 function loadUI() {
-    let game = Game();
     //game.randomize();
 
     let uiBoards = []
@@ -11,7 +11,7 @@ function loadUI() {
     const gameContainer = document.createElement('div');
             gameContainer.classList.add('game');
 
-    for (const board of game.boards) {
+    for (const board of game.getBoards()) {
 
         const playerSpace = document.createElement('div');
             playerSpace.classList.add('playerSpace');
@@ -31,8 +31,9 @@ function loadUI() {
                     tileEl.classList.add('tile');
 
                     tileEl.onclick = () => {
-                        return
-                        if (!tileEl.parentElement.parentElement.classList.contains('active')){
+                        if (!tileEl.parentElement.parentElement.classList.contains('active')
+                        || !game.isActive())
+                        {
                             return false
                         }
                         if(board.receiveAttack([i, j])){
@@ -63,8 +64,8 @@ function loadUI() {
                 }
 
                 shipEl.onclick = () => {
-                    console.log(ship.getCoords());
-                    if (ship.getCoords().length === 0) {
+                    if (shipEl.parentElement.parentElement.classList.contains('active')
+                    && !game.isActive()) {
                         selectShip(tiles, ship, board);
                     }
                 } 
@@ -81,10 +82,12 @@ function loadUI() {
 
     body.append(gameContainer);
 
-    renderShips(uiBoards[0], game.boards[0]);
-    renderShips(uiBoards[1], game.boards[1]);
+    renderShips(uiBoards[0], game.getBoards()[0]);
+    renderShips(uiBoards[1], game.getBoards()[1]);
 
     document.querySelectorAll('.playerSpace')[0].classList.add('active');
+
+    setupBoard()
 }
 
 function hoverShip(tiles, ship) {
@@ -129,10 +132,11 @@ function stripMouseoverEvents() {
     }
 }
 
-function replaceShip(ship, board) {
+function replaceShip(tiles, ship, board) {
     for (const oldShip of board.getShips()) {
         if (JSON.stringify(oldShip.getCoords()) === JSON.stringify(ship.getCoords())) {
             Object.assign(oldShip, ship);
+            renderShips(tiles, board)
             return true
         }
     }
@@ -146,6 +150,10 @@ function selectShip(tiles, ship, board) {
         for (let j=0; j<tiles[i].length; ++j) {
 
             tiles[i][j].onmouseover = () => {
+
+                if(game.isActive()) {
+                    return false
+                }
 
                 let anchor = [i, j];
                 let mockShip =  board.makeMockShip(anchor, ship.getLength(), ship.isVertical());
@@ -161,13 +169,13 @@ function selectShip(tiles, ship, board) {
                         if (numClicks === 1) {
                             singleClickTimer = setTimeout(() => {
                                 numClicks = 0;
+                                stripMouseoverEvents()
                                 Object.assign(ship, mockShip);
-                                if (!replaceShip(ship, board)) {
-                                    board.placeShip(ship)
+                                Object.assign(mockShip, null)
+                                if (!replaceShip(tiles, ship, board)) {
+                                    board.placeShip(ship);
                                 }
                                 renderShips(tiles, board);
-                                stripMouseoverEvents()
-                                Object.assign(mockShip, null)
                             }, 400);
                           }
                         else if (numClicks === 2) {
@@ -191,6 +199,51 @@ function selectShip(tiles, ship, board) {
             })
         }
     }
+}
+
+function setupBoard() {
+
+    if (game.activeBoard().getShips()[0].getCoords().length !== 0) {
+        startGame()
+        return
+    }
+
+    let activeSpace = document.querySelectorAll('.playerSpace.active');
+
+    activeSpace[0].append(confirmButton());
+
+    function confirmButton() {
+
+        let confirmButton = document.createElement('button');
+            confirmButton.innerHTML = 'confirm';
+
+            confirmButton.classList.add('confirm')
+
+        confirmButton.onclick = () => {
+
+            let ships = game.activeBoard().getShips();
+
+            for (const ship of ships) {
+                console.log(ship.getCoords())
+                if (ship.getCoords().length === 0) {
+                    return false
+                }
+            }
+
+            game.toggleTurn();
+            togglePlayer();
+            confirmButton.parentElement.removeChild(confirmButton);
+
+
+            setupBoard();
+        }
+        
+        return confirmButton
+    }
+}
+
+function startGame() {
+    game.start()
 }
 
 export {loadUI}
