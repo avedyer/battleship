@@ -14,24 +14,47 @@ let Ship = (length) => {
         return hits === length ? true : false
     }
 
-    function getCoords(anchor) {
+    function turn() {
+        vertical = !vertical;
+        let newCoords = []
+        let anchor = coords[0]
+        for (let i=0; i<length; ++i) {
+            newCoords[i] = vertical ? [anchor[0], anchor[1] + i] : [anchor[0] + i, anchor[1]];
+        }
+        console.log('old: ' +  coords);
+        writeCoords(newCoords);
+        console.log('new: ' + coords)
+    }
 
+    function isVertical() {
+        return vertical
+    }
+    function getLength() {
+        return length
+    }
+    function getCoords() {
+        return coords
+    }
+
+    function getHits() {
+        return hits
     }
 
     function writeCoords(newCoords) {
         for (let i=0; i<newCoords.length; ++i) {
-            coords[i] = newCoords[i].slice();
+            coords.splice(i, 1, newCoords[i]);
         }
     }
 
     return {
-        length,
-        coords,
-        vertical,
-        hits,
         hit,
         isSunk,
-        writeCoords
+        getHits,
+        isVertical,
+        getLength,
+        getCoords,
+        writeCoords,
+        turn
     }
 }
 
@@ -44,9 +67,21 @@ const Board = () => {
     let ships = [];
     let size = 10;
 
+    function getShips() {
+        return ships
+    }
+
+    function getHits() {
+        return hits
+    }
+
+    function getMisses() {
+        return misses
+    }
+
     function validateCoords(ship) {
-        for (let i=0; i<ship.length; ++i) {
-            if (ship.coords[i][0] >= size || ship.coords[i][1] >= size) {
+        for (let i=0; i<ship.getLength(); ++i) {
+            if (ship.getCoords()[i][0] >= size || ship.getCoords()[i][1] >= size) {
                 return false
             }
         }
@@ -56,7 +91,7 @@ const Board = () => {
     function validatePlacement(coords) {
         for (let i=0; i<coords.length; ++i) {
             for (const oldShip of ships) {
-                for (const oldCoord of oldShip.coords) {
+                for (const oldCoord of oldShip.getCoords()) {
                     if (coords[i][0] === oldCoord[0] && coords[i][1] === oldCoord[1]) {
                         return false
                     }
@@ -68,14 +103,16 @@ const Board = () => {
 
     function makeMockShip(anchor, length, vertical) {
         let mockShip = Ship(length);
-        mockShip.vertical = vertical;
+        if (mockShip.isVertical() !== vertical) {
+            mockShip.turn();
+        }
 
         let coords = []
 
-        for (let i=0; i<mockShip.length; ++i) {
-            coords[i] = mockShip.vertical ? [anchor[0], anchor[1] + i] : [anchor[0] + i, anchor[1]];
+        for (let i=0; i<mockShip.getLength(); ++i) {
+            coords[i] = mockShip.isVertical() ? [anchor[0], anchor[1] + i] : [anchor[0] + i, anchor[1]];
         }
-
+        
         mockShip.writeCoords(coords);
 
         return mockShip;
@@ -102,10 +139,10 @@ const Board = () => {
                 coords = coords.splice(0, coords.length);
                 let vertical = Math.random() < 0.5;
 
-                mockShip = makeMockShip(anchor, ship.length, vertical)
+                mockShip = makeMockShip(anchor, ship.getLength(), vertical)
                 --timeout
             }
-            while(!validateCoords(mockShip) || !validatePlacement(mockShip.coords));
+            while(!validateCoords(mockShip) || !validatePlacement(mockShip.getCoords()));
             ship = mockShip
             placeShip(ship);
 
@@ -113,7 +150,6 @@ const Board = () => {
                 break
             }
         }
-        console.log(ships);
     }
 
     function receiveAttack(attack) {
@@ -132,7 +168,7 @@ const Board = () => {
         attacks.push(attack);
         
         for (let ship of ships) {
-            for (let coord of ship.coords) {
+            for (let coord of ship.getCoords()) {
                 if (attack[0] === coord[0] && attack[1] === coord[1]) {
                     hits.push(attack);
                     ship.hit()
@@ -160,10 +196,12 @@ const Board = () => {
     }
 
     return {
-        ships,
         attacks,
         hits,
         misses,
+        getHits,
+        getMisses,
+        getShips,
         placeShip,
         receiveAttack,
         checkWin,
@@ -204,6 +242,12 @@ const Game = () => {
 
     let players = newPlayers()
     let boards = newBoards()
+
+    for (let board of boards) {
+        for (let ship of newShips()) {
+            board.placeShip(ship);
+        }
+    }
 
     function randomize() {
         for (const board of boards) {

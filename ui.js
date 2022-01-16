@@ -13,8 +13,6 @@ function loadUI() {
 
     for (const board of game.boards) {
 
-        console.log(board);
-
         const playerSpace = document.createElement('div');
             playerSpace.classList.add('playerSpace');
 
@@ -55,16 +53,21 @@ function loadUI() {
             tiles.push(row);
         }
 
-        for (const ship of game.newShips()) {  
+        for (const ship of board.getShips()) {  
 
             const shipEl = document.createElement('div')
                 shipEl.classList.add('ship', 'docked')
 
-                for (let i=0; i<ship.length; ++i) {
+                for (let i=0; i<ship.getLength(); ++i) {
                     shipEl.append(document.createElement('div'));
                 }
 
-                shipEl.onclick = () => selectShip(tiles, ship, board);
+                shipEl.onclick = () => {
+                    console.log(ship.getCoords());
+                    if (ship.getCoords().length === 0) {
+                        selectShip(tiles, ship, board);
+                    }
+                } 
 
             dock.append(shipEl);
         }
@@ -86,7 +89,7 @@ function loadUI() {
 
 function hoverShip(tiles, ship) {
 
-    for (const coord of ship.coords) {
+    for (const coord of ship.getCoords()) {
         tiles[coord[0]][coord[1]].classList.add('shadow');
     }
 }
@@ -98,18 +101,18 @@ function stripHoverShip() {
 }
 
 function renderShips(tiles, board) {
-    for (const ship of board.ships) {
-        for (const coord of ship.coords) {
+    for (const ship of board.getShips()) {
+        for (const coord of ship.getCoords()) {
             tiles[coord[0]][coord[1]].classList.add('ship');
         }
     }
 }
 
 function renderAttacks(tiles, board) {
-    for (const hit of board.hits) {
+    for (const hit of board.getHits()) {
         tiles[hit[0]][hit[1]].classList.add('hit');
     }
-    for (const miss of board.misses) {
+    for (const miss of board.getMisses()) {
         tiles[miss[0]][miss[1]].classList.add('miss');
     }
 }
@@ -120,11 +123,26 @@ function togglePlayer() {
     }
 }
 
+function stripMouseoverEvents() {
+    for (let tile of document.querySelectorAll('.tile')) {
+        tile.onmouseover = () => {}
+    }
+}
+
+function replaceShip(ship, board) {
+    for (const oldShip of board.getShips()) {
+        if (JSON.stringify(oldShip.getCoords()) === JSON.stringify(ship.getCoords())) {
+            Object.assign(oldShip, ship);
+            return true
+        }
+    }
+    return false
+}
+
 function selectShip(tiles, ship, board) {
 
-    if (board.ships.length >= 5) {
-        return false
-    }
+    console.log(ship)
+    let mockShip = Ship();
 
     for (let i=0; i<tiles.length; ++i){
 
@@ -132,9 +150,11 @@ function selectShip(tiles, ship, board) {
 
             tiles[i][j].onmouseover = () => {
 
-                let mockShip = board.makeMockShip([i, j], ship.length, ship.vertical);
+                let anchor = [i, j];
+                console.log(anchor)
+                Object.assign(mockShip, board.makeMockShip(anchor, ship.getLength(), ship.isVertical()))
 
-                if (board.validateCoords(mockShip) && board.validatePlacement(mockShip.coords)) {
+                if (board.validateCoords(mockShip) && board.validatePlacement(mockShip.getCoords())) {
 
                     hoverShip(tiles, mockShip);
 
@@ -145,19 +165,23 @@ function selectShip(tiles, ship, board) {
                         if (numClicks === 1) {
                             singleClickTimer = setTimeout(() => {
                                 numClicks = 0;
-                                console.log('single click')
-                                ship = mockShip
-                                board.placeShip(ship);
+                                Object.assign(ship, mockShip);
+                                if (!replaceShip(ship, board)) {
+                                    board.placeShip(ship)
+                                }
                                 renderShips(tiles, board);
+                                stripMouseoverEvents()
+                                Object.assign(mockShip, null)
                             }, 400);
                           }
                         else if (numClicks === 2) {
                             clearTimeout(singleClickTimer);
                             numClicks = 0;
-                            console.log('dbl click');
-                            ship.vertical = !ship.vertical;
-                            mockShip = board.makeMockShip([i, j], ship.length, ship.vertical);
-                            console.log(mockShip)
+                            ship.writeCoords(mockShip.getCoords());
+                            console.log(ship.getCoords())
+                            mockShip.turn();
+                            ship.turn();
+                            console.log(mockShip.isVertical(), mockShip.getCoords());
                         }
                     }
 
