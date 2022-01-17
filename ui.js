@@ -4,7 +4,6 @@ const body = document.querySelector('body');
 let game = Game();
 
 function loadUI() {
-    //game.randomize();
 
     let uiBoards = []
 
@@ -29,24 +28,6 @@ function loadUI() {
             for (let j=0; j<10; ++j) {
                 const tileEl = document.createElement('div');
                     tileEl.classList.add('tile');
-
-                    tileEl.onclick = () => {
-                        if (!tileEl.parentElement.parentElement.classList.contains('active')
-                        || !game.isActive())
-                        {
-                            return false
-                        }
-                        if(board.receiveAttack([i, j])){
-                            renderAttacks(tiles, board);
-                            if (!board.checkWin()) {
-                                togglePlayer();
-                                return true
-                            }
-                            alert('win detected!');
-                            return true
-
-                        }
-                    }
 
                 row.push(tileEl)
                 boardEl.append(tileEl);
@@ -126,10 +107,51 @@ function togglePlayer() {
     }
 }
 
-function stripMouseoverEvents() {
+function stripTileEvents() {
     for (let tile of document.querySelectorAll('.tile')) {
         tile.onmouseover = () => {}
+        tile.onclick = () => {}
     }
+}
+
+function armTiles() {
+    let boards = document.querySelectorAll('.board')
+    for (let i=0; i<2; ++i) {
+        let tileArr = boards[i].querySelectorAll('.tile');
+        console.log(boards[i]);
+        console.log(tileArr);
+        let tileGrid = []
+
+        for (let x=0; x<10; ++x) {
+            let tileRow = []
+            for (let y=0; y<10; ++y) {
+                tileRow.push(tileArr[x*10 + y])
+                tileArr[x*10 + y].onclick = () => {
+                    if (!boards[i].parentElement.classList.contains('active')
+                    || !game.isActive()) {
+                        return false
+                    }
+
+                    else if(game.takeTurn([x, y])) {
+                        if (game.isWon()) {
+                            renderAttacks(tileGrid, game.activeBoard());
+                            displayWin();
+                            return
+                        }
+                        else {
+                            togglePlayer();
+                            renderAttacks(tileGrid, game.inactiveBoard());
+                        }
+                    }
+                }
+            }
+            tileGrid.push(tileRow);
+        }
+    }
+}
+
+function displayWin() {
+    alert('win detected!');
 }
 
 function replaceShip(tiles, ship, board) {
@@ -169,7 +191,7 @@ function selectShip(tiles, ship, board) {
                         if (numClicks === 1) {
                             singleClickTimer = setTimeout(() => {
                                 numClicks = 0;
-                                stripMouseoverEvents()
+                                stripTileEvents()
                                 Object.assign(ship, mockShip);
                                 Object.assign(mockShip, null)
                                 if (!replaceShip(tiles, ship, board)) {
@@ -224,7 +246,6 @@ function setupBoard() {
             let ships = game.activeBoard().getShips();
 
             for (const ship of ships) {
-                console.log(ship.getCoords())
                 if (ship.getCoords().length === 0) {
                     return false
                 }
@@ -244,6 +265,8 @@ function setupBoard() {
 
 function startGame() {
     game.start()
+    stripTileEvents();
+    armTiles();
 }
 
 export {loadUI}

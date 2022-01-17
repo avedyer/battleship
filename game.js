@@ -82,6 +82,14 @@ const Board = () => {
         return misses
     }
 
+    function getAttacks() {
+        return attacks
+    }
+
+    function clearShips() {
+        ships.length = 0;
+    }
+
     function validateCoords(ship) {
         for (let i=0; i<ship.getLength(); ++i) {
             if (ship.getCoords()[i][0] >= size || ship.getCoords()[i][1] >= size) {
@@ -208,7 +216,9 @@ const Board = () => {
         validateCoords,
         validatePlacement,
         makeMockShip,
-        randomizeShips
+        clearShips,
+        randomizeShips,
+        getAttacks
     }
 }
 
@@ -218,6 +228,10 @@ const Player = (name) => {
 
     function isComputer() {
         return computer
+    }
+
+    function makeComputer() {
+        computer = true
     }
 
     const computeMove = (gameboard) => {
@@ -233,6 +247,7 @@ const Player = (name) => {
 
     return {
         name,
+        makeComputer,
         isComputer,
         computeMove
     }
@@ -241,6 +256,7 @@ const Player = (name) => {
 const Game = () => {
 
     let active = false
+    let won = false
 
     const newShips = () => [Ship(2), Ship(3), Ship(3), Ship(4), Ship(5)]
     const newPlayers = () => [Player(), Player()];
@@ -259,15 +275,19 @@ const Game = () => {
         return boards
     }
 
+    let isWon = () => won
+
     function randomize() {
         for (const board of boards) {
+            board.clearShips()
             board.randomizeShips(newShips());
         }
     }
 
     let activeIndex = 0
     let activeBoard = () => boards[activeIndex];
-    let livePlayer = () => activeIndex === 1 ? players[0] : players[1]
+    let inactiveBoard = () => boards[activeIndex === 1 ? 0 : 1]
+    let activePlayer = () => activeIndex === 1 ? players[0] : players[1]
 
     const checkWin = () => {
         if(activeBoard().checkWin()) {
@@ -279,7 +299,8 @@ const Game = () => {
     }
 
     function toggleTurn() {
-        activeIndex === 1 ? activeIndex  = 0 : activeIndex = 1
+        activeIndex === 1 ? activeIndex = 0 : activeIndex = 1
+        
     }
 
 
@@ -289,31 +310,43 @@ const Game = () => {
 
     function start() {
         active = true
-        activeIndex = 1;
-        takeTurn();
+        activeIndex = 0;
     }
 
     function takeTurn(attack) {
         
         if(activePlayer().isComputer()) {
-            activePlayer().computeMove();
+            activePlayer().computeMove(activeBoard());
+            return true
         }
 
         else {
-            activeBoard.receiveAttack(attack);
+            if(activeBoard().receiveAttack(attack)) {
+                console.log(boards[0].getAttacks(), boards[1].getAttacks())
+                if(checkWin()) {
+                    won = true
+                }
+                return true
+            }
         }
+        return false
     }
+
+    randomize()
 
     return {
         isActive,
         start,
         getBoards,
         activeBoard,
+        inactiveBoard,
         checkWin,
         toggleTurn,
         newShips,
         randomize,
-        isActive
+        isActive,
+        takeTurn,
+        isWon
     }
 }
 
