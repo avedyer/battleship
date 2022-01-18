@@ -53,6 +53,10 @@ button.confirm {
     background-color: grey;
 }
 
+.tile.highlight {
+    background-color: greenyellow;
+}
+
 .tile.hit {
     background-color: red;
 }

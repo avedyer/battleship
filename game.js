@@ -43,6 +43,10 @@ let Ship = (length) => {
         return hits
     }
 
+    function clearCoords() {
+        coords.length = 0;
+    }
+
     function writeCoords(newCoords) {
         for (let i=0; i<newCoords.length; ++i) {
             coords.splice(i, 1, newCoords[i]);
@@ -56,6 +60,7 @@ let Ship = (length) => {
         isVertical,
         getLength,
         getCoords,
+        clearCoords,
         writeCoords,
         turn
     }
@@ -332,7 +337,7 @@ const Game = () => {
         return false
     }
 
-    randomize()
+    //randomize()
 
     return {
         isActive,

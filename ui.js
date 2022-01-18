@@ -51,6 +51,14 @@ function loadUI() {
                     }
                 } 
 
+                shipEl.onmouseover = () => {
+                    highlightShip(tiles, ship);
+                }
+
+                shipEl.onmouseout = () => {
+                    stripHighlight(tiles, ship);
+                }
+
             dock.append(shipEl);
         }
 
@@ -78,13 +86,34 @@ function hoverShip(tiles, ship) {
     }
 }
 
+function highlightShip(tiles, ship) {
+    for (const coord of ship.getCoords()) {
+        tiles[coord[0]][coord[1]].classList.add('highlight');
+    }
+}
+
+function stripHighlight(tiles, ship) {
+    for (const coord of ship.getCoords()) {
+        tiles[coord[0]][coord[1]].classList.remove('highlight');
+    }
+}
+
 function stripHoverShip() {
     for (const tile of document.querySelectorAll('.tile')) {
         tile.classList.remove('shadow', 'reject');
     }
 }
 
+function clearBoard(tiles) {
+    for(let i=0; i<tiles.length; ++i) {
+        for (let j=0; j<tiles[i].length; ++j) {
+            tiles[i][j].className = 'tile'
+        }
+    }
+}
+
 function renderShips(tiles, board) {
+    clearBoard(tiles);
     for (const ship of board.getShips()) {
         for (const coord of ship.getCoords()) {
             tiles[coord[0]][coord[1]].classList.add('ship');
@@ -166,6 +195,12 @@ function replaceShip(tiles, ship, board) {
 }
 
 function selectShip(tiles, ship, board) {
+
+    if (ship.getCoords().length > 0) {
+        ship.clearCoords();
+        console.log(ship.getCoords())
+        renderShips(tiles, board);
+    }
 
     for (let i=0; i<tiles.length; ++i){
 
