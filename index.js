@@ -1,4 +1,4 @@
-import { loadUI } from "./ui.js";
+import { UI } from "./ui.js";
 
 
-loadUI();
+UI.load()
