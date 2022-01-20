@@ -24,9 +24,7 @@ let Ship = (length) => {
         for (let i=0; i<length; ++i) {
             newCoords[i] = vertical ? [anchor[0], anchor[1] + i] : [anchor[0] + i, anchor[1]];
         }
-        console.log('old: ' +  coords);
         writeCoords(newCoords);
-        console.log('new: ' + coords)
     }
 
     function isVertical() {
@@ -251,7 +249,6 @@ const Player = (name) => {
     }
 
     return {
-        name,
         makeComputer,
         isComputer,
         computeMove
@@ -270,6 +267,8 @@ const Game = () => {
     let players = newPlayers()
     let boards = newBoards()
 
+    players[1].makeComputer()
+
     for (let board of boards) {
         for (let ship of newShips()) {
             board.placeShip(ship);
@@ -279,6 +278,8 @@ const Game = () => {
     function getBoards() {
         return boards
     }
+
+    const getPlayers = () => players
 
     let isWon = () => won
 
@@ -290,9 +291,9 @@ const Game = () => {
     }
 
     let activeIndex = 0
-    let activeBoard = () => boards[activeIndex];
-    let inactiveBoard = () => boards[activeIndex === 1 ? 0 : 1]
-    let activePlayer = () => activeIndex === 1 ? players[0] : players[1]
+    let activeBoard = () => boards[activeIndex === 1 ? 0 : 1];
+    let inactiveBoard = () => boards[activeIndex]
+    let activePlayer = () => players[activeIndex]
 
     const checkWin = () => {
         if(activeBoard().checkWin()) {
@@ -327,7 +328,6 @@ const Game = () => {
 
         else {
             if(activeBoard().receiveAttack(attack)) {
-                console.log(boards[0].getAttacks(), boards[1].getAttacks())
                 if(checkWin()) {
                     won = true
                 }
@@ -351,7 +351,9 @@ const Game = () => {
         randomize,
         isActive,
         takeTurn,
-        isWon
+        isWon,
+        activePlayer,
+        getPlayers
     }
 }
 

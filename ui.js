@@ -57,6 +57,8 @@ const UI = (() => {
         playerSpaces[0].classList.add('active');
         body.append(gameContainer);
 
+        boardDisplays[0].toggle();
+
         setupBoards();
     }
 
@@ -70,9 +72,9 @@ const UI = (() => {
     }
 
     function setupBoards() {
-
         if (game.activeBoard().getShips()[0].getCoords().length !== 0) {
-            startGame()
+            console.log('starting')
+            startGame();
             return
         }
     
@@ -89,25 +91,27 @@ const UI = (() => {
     
             confirmButton.onclick = () => {
     
-                let ships = game.activeBoard().getShips();
+                let ships = game.inactiveBoard().getShips();
     
                 for (const ship of ships) {
                     if (ship.getCoords().length === 0) {
-                        startGame();
                         return false
                     }
                 }
     
                 game.toggleTurn();
                 togglePlayer();
-                confirmButton.parentElement.removeChild(confirmButton);
+                confirmButton.parentElement.removeChild(confirmButton);    
     
                 if (game.activePlayer().isComputer()) {
-                    setTimeout(() => {activeBoard().randomize()}, 2000);
-                    return
+                    setTimeout(() => {
+                        activeBoard().randomize();
+                        setupBoards();
+                    }, 2000);
                 }
-    
-                setupBoard();
+                else {
+                    setupBoards();
+                }
             }
             
             return confirmButton
@@ -135,6 +139,7 @@ const UI = (() => {
         activeBoard,
         inactiveBoard,
         setupBoards,
+        togglePlayer,
         startGame,
         displayWin,
     }
@@ -253,6 +258,7 @@ const BoardDisplay = (board) => {
         for (let x=0; x<10; ++x) {
             for (let y=0; y<10; ++y) {
                 tiles[x][y].onclick = () => {
+                    console.log('attack at ' + x, y);
                     if (!active
                     || !game.isActive()) {
                         return false
@@ -266,7 +272,7 @@ const BoardDisplay = (board) => {
                         }
                         else {
                             UI.togglePlayer();
-                            UI.inactiveBoard().renderAttacks()
+                            UI.inactiveBoard().renderAttacks();
                         }
                     }
                 }
@@ -276,8 +282,8 @@ const BoardDisplay = (board) => {
 
     function randomize() {
         console.log('randomizing');
-        game.activeBoard().clearShips();
-        game.activeBoard().randomizeShips(game.newShips());
+        game.inactiveBoard().clearShips();
+        game.inactiveBoard().randomizeShips(game.newShips());
         renderShips();
     }
 
@@ -315,7 +321,6 @@ const BoardDisplay = (board) => {
 
         if (ship.getCoords().length > 0) {
             ship.clearCoords();
-            console.log(ship.getCoords())
             renderShips();
         }
     
