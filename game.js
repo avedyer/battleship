@@ -93,6 +93,8 @@ const Board = () => {
         ships.length = 0;
     }
 
+    const getSize = () => size
+
     function validateCoords(ship) {
         for (let i=0; i<ship.getLength(); ++i) {
             if (ship.getCoords()[i][0] >= size || ship.getCoords()[i][1] >= size) {
@@ -213,6 +215,7 @@ const Board = () => {
         getHits,
         getMisses,
         getShips,
+        getSize,
         placeShip,
         receiveAttack,
         checkWin,
@@ -237,18 +240,100 @@ const Player = (name) => {
         computer = true
     }
 
-    const computeMove = (gameboard) => {
-        // Random coordinate selector. To be made smart later.
+    function evaluateTiles(gameboard) {
 
-        let attack = []
+        //DOES NOT ACCOUNT FOR SHAPE OF SHIPS WITHOUT AN AVAILABLE HIT TO LEAD OFF FROM. SHOULD BE FIXED
 
-        do {
-            attack[0] = Math.floor(Math.random() * 10)
-            attack[1] = Math.floor(Math.random() * 10)
+        let tileValues = []
+        let hits = gameboard.getHits();
+        let sunkTiles = []
+        let attacks = gameboard.getAttacks();
+
+        for (let i=0; i< gameboard.getSize(); ++i) {
+            let row = []
+            for (let j=0; j<gameboard.getSize(); ++j) {
+                row.push(0);
+            }
+            tileValues.push(row);
         }
-        while(!gameboard.receiveAttack(attack))
 
-        console.log('automatic attack at ' + attack)
+        for (let ship of gameboard.getShips()) {
+            if (ship.isSunk()) {
+                for (let coords of ship.getCoords()) {
+                    sunkTiles.push(coords);
+                }
+            }
+        }
+        
+        for (let hit of hits) {
+
+            let sunk = false;
+
+            for (let sunkTile of sunkTiles) {
+                if (sunkTile[0] === hit[0] && sunkTile[1] === hit[1]) {
+                    sunk = true;
+                    break
+                }
+            }
+
+            if (!sunk) {
+                for (let i=1; i<3; ++i) {
+                    let adjacentTiles = [
+                        [[hit[0] - i], [hit[1]]],
+                        [[hit[0] + i], [hit[1]]],
+                        [[hit[0]], [hit[1] - i]],
+                        [[hit[0]], [hit[1] + i]]
+                    ]
+
+                    console.log(adjacentTiles);
+
+                    for (let tile of adjacentTiles) {
+                        if (tile && tileValues[tile[0]] && tileValues[tile[1]]) {
+                            tileValues[tile[0]][tile[1]] += 2/i;
+                        }
+                    }
+                }
+            }
+            tileValues[hit[0]][hit[1]] = 0
+        }
+
+        for (let attack of attacks) {
+            tileValues[attack[0]][attack[1]]  = -1
+        }
+
+        return tileValues
+    }
+
+    const computeMove = (gameboard) => {
+
+        let tileValues = evaluateTiles(gameboard);
+
+        console.log(tileValues);
+
+        let highValue = 0
+        let highTiles = []
+
+        for (let i=0; i<tileValues.length; ++i) {
+            for (let j=0; j<tileValues.length; ++j) {
+                if (tileValues[i][j] > highValue) {
+                    highValue = tileValues[i][j]
+                    highTiles.length = 0;
+                    highTiles.push([i, j]);
+                }
+
+                else if (tileValues[i][j] === highValue) {
+                    highTiles.push([i, j]);
+                }
+            }
+        }
+
+        console.log(highTiles);
+
+        let attack = Math.floor(Math.random() * highTiles.length)
+        console.log('automatic attack at ' + highTiles[attack])
+
+        gameboard.receiveAttack(highTiles[attack]);  
+        
     }
 
     return {
@@ -309,7 +394,6 @@ const Game = () => {
 
     function toggleTurn() {
         activeIndex === 1 ? activeIndex = 0 : activeIndex = 1
-        console.log('new active index: ' + activeIndex);
         
     }
 
@@ -324,8 +408,6 @@ const Game = () => {
     }
 
     function takeTurn(attack) {
-
-        console.log(activeBoard().getAttacks());
         
         if(activePlayer().isComputer()) {
             activePlayer().computeMove(activeBoard());
