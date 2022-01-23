@@ -33,7 +33,7 @@ const UI = (() => {
     function load() {
 
         const gameContainer = document.createElement('div');
-            gameContainer.classList.add('game')
+            gameContainer.classList.add('game');
 
         for (const board of boards) {
             const playerSpace = document.createElement('div');
@@ -146,16 +146,28 @@ const UI = (() => {
                         game.takeTurn();
                         activeBoard().renderAttacks();
                         togglePlayer();
-                    }, 3000);
+                    }, 1000);
                 }
             }
         } 
     }
 
     function displayWin() {
-        alert ('win detected')
+        alert ('win detected');
+        reset();
     }
 
+    function reset() {
+        game = Game();
+
+        boards = game.getBoards();
+        boardDisplays = []
+        playerSpaces = [];
+
+        document.querySelector('.game').innerHTML = '';
+
+        load();
+    }
     return {
         load,
         getBoards,
