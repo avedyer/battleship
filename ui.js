@@ -128,6 +128,30 @@ const UI = (() => {
         game.start()
     }
 
+    function takeTurn(attack) {
+        if (game.takeTurn(attack)) {
+
+            activeBoard().renderAttacks();
+
+            if(game.isWon()) {
+                displayWin();
+            }
+
+            else {
+
+                togglePlayer();
+
+                if (game.activePlayer().isComputer()) {
+                    setTimeout(() => {
+                        game.takeTurn();
+                        activeBoard().renderAttacks();
+                        togglePlayer();
+                    }, 3000);
+                }
+            }
+        } 
+    }
+
     function displayWin() {
         alert ('win detected')
     }
@@ -142,6 +166,7 @@ const UI = (() => {
         togglePlayer,
         startGame,
         displayWin,
+        takeTurn
     }
 })();
 
@@ -258,23 +283,32 @@ const BoardDisplay = (board) => {
         for (let x=0; x<10; ++x) {
             for (let y=0; y<10; ++y) {
                 tiles[x][y].onclick = () => {
-                    console.log('attack at ' + x, y);
                     if (!active
                     || !game.isActive()) {
                         return false
                     }
 
+                    else {
+                        console.log('attack at ' + x, y);
+                        UI.takeTurn([x, y]);
+                    }
+
+                    /*
                     else if(game.takeTurn([x, y])) {
+
+                        UI.activeBoard.renderAttacks();
+                        UI.inactiveBoard.renderAttacks();
+
                         if (game.isWon()) {
-                            UI.activeBoard().renderAttacks();
                             UI.displayWin();
-                            return
                         }
                         else {
                             UI.togglePlayer();
                             UI.inactiveBoard().renderAttacks();
                         }
                     }
+
+                    */
                 }
             }
         }

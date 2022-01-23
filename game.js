@@ -240,12 +240,15 @@ const Player = (name) => {
     const computeMove = (gameboard) => {
         // Random coordinate selector. To be made smart later.
 
-        let attack = [Math.floor(Math.random * 10), Math.floor(Math.random() * 10)]
+        let attack = []
 
-        while(!gameboard.receiveAttack(attack)) {
-            attack = [Math.floor(Math.random * 10), Math.floor(Math.random() * 10)]
-            gameboard.receiveAttack(attack);
+        do {
+            attack[0] = Math.floor(Math.random() * 10)
+            attack[1] = Math.floor(Math.random() * 10)
         }
+        while(!gameboard.receiveAttack(attack))
+
+        console.log('automatic attack at ' + attack)
     }
 
     return {
@@ -306,6 +309,7 @@ const Game = () => {
 
     function toggleTurn() {
         activeIndex === 1 ? activeIndex = 0 : activeIndex = 1
+        console.log('new active index: ' + activeIndex);
         
     }
 
@@ -320,9 +324,14 @@ const Game = () => {
     }
 
     function takeTurn(attack) {
+
+        console.log(activeBoard().getAttacks());
         
         if(activePlayer().isComputer()) {
             activePlayer().computeMove(activeBoard());
+            if(checkWin()) {
+                won = true
+            }
             return true
         }
 
