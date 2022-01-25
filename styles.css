@@ -65,6 +65,10 @@ button.confirm {
     background-color: blue;
 }
 
+.tile.sunk {
+    background-color: darkred !important;
+}
+
 .tile.reject {
     background-color: palevioletred;
 }

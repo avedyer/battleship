@@ -317,6 +317,14 @@ const BoardDisplay = (board) => {
         for (const miss of board.getMisses()) {
             tiles[miss[0]][miss[1]].classList.add('miss');
         }
+
+        for (const ship of board.getShips()) {
+            if (ship.isSunk()) {
+                for (const coord of ship.getCoords()) {
+                    tiles[coord[0]][coord[1]].classList.add('sunk')
+                }
+            }
+        }
     }
 
     function stripTileEvents() {
