@@ -246,6 +246,7 @@ const Player = (name) => {
 
         let tileValues = []
         let hits = gameboard.getHits();
+        let misses = gameboard.getMisses();
         let sunkTiles = []
         let attacks = gameboard.getAttacks();
 
@@ -289,7 +290,7 @@ const Player = (name) => {
 
                     for (let tile of adjacentTiles) {
                         if (tile && tileValues[tile[0]] && tileValues[tile[1]]) {
-                            tileValues[tile[0]][tile[1]] += 2/i;
+                            tileValues[tile[0]][tile[1]] += 5/i;
                         }
                     }
                 }
@@ -297,8 +298,38 @@ const Player = (name) => {
             tileValues[hit[0]][hit[1]] = 0
         }
 
+        for (let miss of misses) {
+            for (let i=1; i<3; ++i) {
+                let adjacentTiles = [
+                    [[miss[0] - i], [miss[1]]],
+                    [[miss[0] + i], [miss[1]]],
+                    [[miss[0]], [miss[1] - i]],
+                    [[miss[0]], [miss[1] + i]],
+                ]
+
+                let diagonalTies = [
+                    [[miss[0]] - i, [miss[1] - i]],
+                    [[miss[0]] + i, [miss[1] + i]],
+                ]
+
+                console.log(adjacentTiles);
+
+                for (let tile of adjacentTiles) {
+                    if (tile && tileValues[tile[0]] && tileValues[tile[1]]) {
+                        tileValues[tile[0]][tile[1]] -= 2/i;
+                    }
+                }
+
+                for (let tile of diagonalTies) {
+                    if (tile && tileValues[tile[0]] && tileValues[tile[1]]) {
+                        tileValues[tile[0]][tile[1]] -= 3/i;
+                    }
+                }
+            }
+        }
+
         for (let attack of attacks) {
-            tileValues[attack[0]][attack[1]]  = -1
+            tileValues[attack[0]][attack[1]]  = - (2**8);
         }
 
         return tileValues
@@ -310,11 +341,14 @@ const Player = (name) => {
 
         console.log(tileValues);
 
-        let highValue = 0
         let highTiles = []
+        let highValue;
 
         for (let i=0; i<tileValues.length; ++i) {
-            for (let j=0; j<tileValues.length; ++j) {
+            for (let j=0; j<tileValues[i].length; ++j) {
+                if (i === 0 && j === 0) {
+                    highValue = tileValues[i][j];
+                }   
                 if (tileValues[i][j] > highValue) {
                     highValue = tileValues[i][j]
                     highTiles.length = 0;
@@ -386,6 +420,7 @@ const Game = () => {
     const checkWin = () => {
         if(activeBoard().checkWin()) {
             active = false
+            won = true
             return true
         }
         toggleTurn();
@@ -411,17 +446,13 @@ const Game = () => {
         
         if(activePlayer().isComputer()) {
             activePlayer().computeMove(activeBoard());
-            if(checkWin()) {
-                won = true
-            }
+            checkWin();
             return true
         }
 
         else {
             if(activeBoard().receiveAttack(attack)) {
-                if(checkWin()) {
-                    won = true
-                }
+                checkWin()
                 return true
             }
         }

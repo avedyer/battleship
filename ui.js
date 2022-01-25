@@ -30,6 +30,9 @@ const UI = (() => {
         }
     }
 
+    const activeSpace = () => document.querySelector('.playerSpace.active');
+    const inactiveSpace = () => document.querySelector('.playerSpace:not(.active)');
+
     function load() {
 
         const gameContainer = document.createElement('div');
@@ -65,9 +68,29 @@ const UI = (() => {
     const getElement = () => gameContainer
 
     function togglePlayer() {
+
         for(let i=0; i<2; ++i) {
             boardDisplays[i].toggle();
             playerSpaces[i].classList.toggle('active');
+        }
+
+        renderEllipsis();
+    }
+
+    function renderEllipsis() {
+        let ellipsis = document.querySelector('.ellipsis');
+
+        if (ellipsis) {
+            ellipsis.parentElement.removeChild(ellipsis);
+        }
+
+        ellipsis = document.createElement('h3');
+            ellipsis.classList.add('ellipsis');
+            ellipsis.innerHTML = '...';
+
+        if (game.isActive()) {
+            console.log(inactiveSpace());
+            inactiveSpace().append(ellipsis);            
         }
     }
 
@@ -83,11 +106,15 @@ const UI = (() => {
         activeSpace[0].append(confirmButton());
     
         function confirmButton() {
+
+            let confirmContainer = document.createElement('div');
+                confirmContainer.classList.add('confirm');
+
+            let placementPrompt = document.createElement('h3');
+                placementPrompt.innerHTML = game.activePlayer().isComputer() ? 'Computer is placing ships' : 'Place your ships!';
     
             let confirmButton = document.createElement('button');
                 confirmButton.innerHTML = 'confirm';
-    
-                confirmButton.classList.add('confirm')
     
             confirmButton.onclick = () => {
     
@@ -101,7 +128,7 @@ const UI = (() => {
     
                 game.toggleTurn();
                 togglePlayer();
-                confirmButton.parentElement.removeChild(confirmButton);    
+                confirmContainer.parentElement.removeChild(confirmContainer);    
     
                 if (game.activePlayer().isComputer()) {
                     setTimeout(() => {
@@ -113,8 +140,10 @@ const UI = (() => {
                     setupBoards();
                 }
             }
+
+            confirmContainer.append(placementPrompt, confirmButton);
             
-            return confirmButton
+            return confirmContainer
         }
     }
 
@@ -126,6 +155,7 @@ const UI = (() => {
         }
 
         game.start()
+        renderEllipsis()
     }
 
     function takeTurn(attack) {
@@ -134,6 +164,7 @@ const UI = (() => {
             activeBoard().renderAttacks();
 
             if(game.isWon()) {
+                console.log('win!');
                 displayWin();
             }
 
@@ -146,6 +177,12 @@ const UI = (() => {
                         game.takeTurn();
                         activeBoard().renderAttacks();
                         togglePlayer();
+                        
+                        if(game.isWon()) {
+                            console.log('win!');
+                            displayWin();
+                        }
+            
                     }, 1000);
                 }
             }
@@ -304,23 +341,6 @@ const BoardDisplay = (board) => {
                         console.log('attack at ' + x, y);
                         UI.takeTurn([x, y]);
                     }
-
-                    /*
-                    else if(game.takeTurn([x, y])) {
-
-                        UI.activeBoard.renderAttacks();
-                        UI.inactiveBoard.renderAttacks();
-
-                        if (game.isWon()) {
-                            UI.displayWin();
-                        }
-                        else {
-                            UI.togglePlayer();
-                            UI.inactiveBoard().renderAttacks();
-                        }
-                    }
-
-                    */
                 }
             }
         }
@@ -330,7 +350,6 @@ const BoardDisplay = (board) => {
         console.log('randomizing');
         game.inactiveBoard().clearShips();
         game.inactiveBoard().randomizeShips(game.newShips());
-        renderShips();
     }
 
     function fillDock() {
@@ -399,7 +418,9 @@ const BoardDisplay = (board) => {
                                     if (!replaceShip(ship)) {
                                         board.placeShip(ship);
                                     }
-                                    renderShips();
+                                    if (!game.activePlayer().isComputer()) {
+                                        renderShips();
+                                    }
                                 }, 400);
                               }
                             else if (numClicks === 2) {
@@ -445,4 +466,4 @@ const BoardDisplay = (board) => {
     }
 }
 
-export {UI}
+export {UI, game}
