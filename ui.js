@@ -161,7 +161,7 @@ const UI = (() => {
                 placementPrompt.innerHTML = game.activePlayer().isComputer() ? 'Computer is placing ships' : 'Place your ships!';
     
             let confirmButton = document.createElement('button');
-                confirmButton.innerHTML = 'confirm';
+                confirmButton.innerHTML = 'CONFIRM';
     
             confirmButton.onclick = () => {
     
@@ -238,7 +238,7 @@ const UI = (() => {
                             displayWin();
                         }
             
-                    }, 1000);
+                    }, Math.sqrt(Math.random()) * 2000);
                 }
             }
         } 
@@ -257,10 +257,10 @@ const UI = (() => {
         
             let announcement = document.createElement('div');
                 announcement.classList.add('announcement');
-                announcement.innerHTML = game.activePlayer().isComputer() ? 'Player Wins!' : 'Computer Wins!';
+                announcement.innerHTML = game.activePlayer().isComputer() ? 'Computer Wins!' : 'Player Wins!';
 
             let resetButton = document.createElement('button');
-                resetButton.innerHTML = 'New Game';
+                resetButton.innerHTML = 'NEW GAME';
                 resetButton.onclick = () => reset();
             
 
