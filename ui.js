@@ -47,9 +47,13 @@ const UI = (() => {
             let boardEl = newBoard.getBoard();
             let dockEl = newBoard.getDock();
 
-            playerSpace.append(boardEl);
-            boardDisplays.length > 0 ? playerSpace.append(dockEl) : playerSpace.prepend(dockEl);
-            gameContainer.append(playerSpace);
+            const gameHalf = document.createElement('div');
+                gameHalf.classList.add('half')
+
+            gameHalf.append(boardEl);
+            boardDisplays.length > 0 ? gameHalf.append(dockEl) : gameHalf.prepend(dockEl);
+
+            playerSpace.append(gameHalf);
 
             boardDisplays.push(newBoard);
             playerSpaces.push(playerSpace);
@@ -58,11 +62,41 @@ const UI = (() => {
         }
 
         playerSpaces[0].classList.add('active');
-        body.append(gameContainer);
+        body.append(header(), gameContainer, lowerThird(), footer());
 
         boardDisplays[0].toggle();
 
         setupBoards();
+    }
+
+    function header() {
+        let header = document.createElement('header');
+
+        let nameOne = document.createElement('h1');
+            nameOne.classList.add('name')
+            nameOne.innerHTML = 'PLAYER';
+
+        let nameTwo = document.createElement('h1');
+            nameTwo.classList.add('name');
+            nameTwo.innerHTML = 'COMPUTER';
+
+        header.append(nameOne, nameTwo);
+
+
+        return header
+    }
+
+    function lowerThird() {
+        let lowerThird = document.createElement('div');
+            lowerThird.classList.add('lowerThird');
+
+        return lowerThird
+    }
+
+    function footer() {
+        let footer = document.createElement('footer');
+
+        return footer
     }
 
     const getElement = () => gameContainer
@@ -84,9 +118,24 @@ const UI = (() => {
             ellipsis.parentElement.removeChild(ellipsis);
         }
 
-        ellipsis = document.createElement('h3');
-            ellipsis.classList.add('ellipsis');
-            ellipsis.innerHTML = '...';
+        ellipsis = document.createElement('div');
+            ellipsis.classList.add('ellipsis', 'caption');
+
+        
+        for (let i=0; i<3; ++i) {
+            let dot = document.createElement('div');
+            dot.classList.add('dot', 'blinking');
+
+            if (i === 1) {
+                dot.classList.add('delay1');
+            }
+
+            if (i === 2) {
+                dot.classList.add('delay2')
+            }
+
+            ellipsis.append(dot);
+        }
 
         if (game.isActive()) {
             console.log(inactiveSpace());
@@ -100,15 +149,13 @@ const UI = (() => {
             startGame();
             return
         }
-    
-        let activeSpace = document.querySelectorAll('.playerSpace.active');
-    
-        activeSpace[0].append(confirmButton());
+
+        activeSpace().append(confirmButton());
     
         function confirmButton() {
 
             let confirmContainer = document.createElement('div');
-                confirmContainer.classList.add('confirm');
+                confirmContainer.classList.add('confirm', 'caption');
 
             let placementPrompt = document.createElement('h3');
                 placementPrompt.innerHTML = game.activePlayer().isComputer() ? 'Computer is placing ships' : 'Place your ships!';
@@ -131,7 +178,15 @@ const UI = (() => {
                 confirmContainer.parentElement.removeChild(confirmContainer);    
     
                 if (game.activePlayer().isComputer()) {
+                    
+                    const waitMessage = document.createElement('h3');
+                        waitMessage.classList.add('caption');
+                        waitMessage.innerHTML = 'Computing ship placements...';
+
+                    activeSpace().append(waitMessage);
+
                     setTimeout(() => {
+                        activeSpace().removeChild(waitMessage);
                         activeBoard().randomize();
                         setupBoards();
                     }, 2000);
@@ -190,8 +245,28 @@ const UI = (() => {
     }
 
     function displayWin() {
-        alert ('win detected');
-        reset();
+
+        body.classList.add('shadowed');
+
+        let caption = document.querySelector('.caption');   
+            caption.parentNode.removeChild(caption);
+        
+
+        let winBanner = document.createElement('div');
+            winBanner.classList.add('win');
+        
+            let announcement = document.createElement('div');
+                announcement.classList.add('announcement');
+                announcement.innerHTML = game.activePlayer().isComputer() ? 'Player Wins!' : 'Computer Wins!';
+
+            let resetButton = document.createElement('button');
+                resetButton.innerHTML = 'New Game';
+                resetButton.onclick = () => reset();
+            
+
+        winBanner.append(announcement, resetButton);
+        
+        body.append(winBanner);
     }
 
     function reset() {
@@ -201,7 +276,8 @@ const UI = (() => {
         boardDisplays = []
         playerSpaces = [];
 
-        document.querySelector('.game').innerHTML = '';
+        body.classList.remove('shadowed');
+        body.innerHTML = '';
 
         load();
     }
@@ -372,8 +448,7 @@ const BoardDisplay = (board) => {
                 }
 
                 shipEl.onclick = () => {
-                    if (shipEl.parentElement.parentElement.classList.contains('active')
-                    && !game.isActive()) {
+                    if (active && !game.isActive()) {
                         selectShip(ship);
                     }
                 }

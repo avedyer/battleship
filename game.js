@@ -380,7 +380,7 @@ const Player = (name) => {
 const Game = () => {
 
     let active = false
-    let won = false
+    let won = true
 
     const newShips = () => [Ship(2), Ship(3), Ship(3), Ship(4), Ship(5)]
     const newPlayers = () => [Player(), Player()];

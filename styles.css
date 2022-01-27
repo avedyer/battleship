@@ -2,21 +2,29 @@ body {
     width: 100vw;
     height: 100vh;
     margin: 0;
+    overflow-x: hidden;
+}
+
+header {
+    width: 80%;
+    margin: auto;
+    display: flex;
+    justify-content: space-evenly;
 }
 
 .game {
     margin: auto;
     padding: 12px;
-    min-width: 360px;
+    width: 100%;
     display: flex;
     justify-content: center;
 }
 
-.playerSpace > div {
+.half > div {
     margin: 24px;
 }
 
-.playerSpace { 
+.half { 
     display: flex;
     justify-content: center;
 }
@@ -97,4 +105,94 @@ button.confirm {
     height: 24px;
     border: 1px solid black;
     background-color: grey;
+}
+
+.ellipsis {
+    font-size: 36px;
+    line-height: 0.5;
+}
+
+.dot {
+    width: 8px;
+    height: 8px;
+    background-color: black;
+    border-radius: 50%;
+    display: inline-block;
+    margin: 4px;
+}
+
+.blinking {
+    animation-name: blinking;
+    animation-duration: 0.6s;
+    animation-iteration-count: infinite;
+    animation-timing-function: steps(1);
+}
+
+.delay1 {
+    animation-delay: 0.12s;
+}
+
+.delay2 {
+    animation-delay: 0.24s;
+}
+
+@keyframes blinking {
+    0% {
+        width: 8px;
+        height: 8px;
+        margin: 4px;
+    }
+
+    20% {
+        width: 12px;
+        height: 12px;
+        margin: 2px;
+    }
+
+    40% {
+        width: 8px;
+        height: 8px;
+        margin: 4px;
+    }
+}
+
+h3 {
+    font-size: 24px;
+}
+
+.caption button {
+    font-size: 24px;
+}
+
+.playerSpace:nth-child(1) .caption {
+    text-align: center;
+    margin-left: 25%;
+}
+.playerSpace:nth-child(2) .caption {
+    text-align: center;
+    margin-right: 25%;
+}
+
+.win {
+    width: 100%;
+    background-color: rgba(0, 0, 0, 70%);
+    height: 200px;
+    position: absolute;
+    top: 30%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+}
+
+.announcement {
+    font-size: 64px;
+    text-align: center;
+    color: white;
+}
+
+.win button {
+    text-align: center;
+    display: block;
+    margin: auto;
+    font-size: 32px;
 }
